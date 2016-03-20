@@ -22,15 +22,14 @@
 from __future__ import unicode_literals
 import weakref
 
+from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.db.models import Q, Model, Manager
 from django.db.models.fields import CharField
 from django.db.models.fields.files import FieldFile
 from django.db.models.lookups import default_lookups
 from django.forms.models import modelform_factory
-from django.core.paginator import Paginator
-from django.core.exceptions import PermissionDenied
-from django.http import QueryDict
 from django.utils.encoding import force_text
 from django.utils.module_loading import import_string
 from django.utils.translation import ugettext_lazy as _

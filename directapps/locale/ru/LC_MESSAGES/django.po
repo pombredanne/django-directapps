@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-19 16:26+1000\n"
-"PO-Revision-Date: 2016-03-19 16:27+1000\n"
+"POT-Creation-Date: 2016-03-21 02:25+1000\n"
+"PO-Revision-Date: 2016-03-21 02:25+1000\n"
 "Last-Translator: Григорий Крамаренко <root@rosix.ru>\n"
 "Language-Team: None\n"
 "Language: Russian \n"
@@ -18,69 +18,73 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 
-#: controllers.py:141
+#: apps.py:28
+msgid "Direct Apps"
+msgstr "Direct Apps"
+
+#: controllers.py:169
 msgid "The request body does not contain the list id."
 msgstr "Тело запроса не содержит списка идентификаторов."
 
-#: controllers.py:153
+#: controllers.py:181
 msgid "Not contains fields for object."
 msgstr "Не содержит поля для объекта."
 
-#: controllers.py:164
+#: controllers.py:192
 msgid "The action name must be in lower case."
 msgstr "Имя действия должно быть в нижнем регистре."
 
-#: controllers.py:168
+#: controllers.py:196
 #, python-format
 msgid "Method '%s' is forbidden for action."
 msgstr "Метод '%s' запрещён для действия."
 
-#: controllers.py:179
+#: controllers.py:207
 #, python-format
 msgid "Action '%s' not exist."
 msgstr "Действия '%s' не существует."
 
-#: controllers.py:506
+#: controllers.py:542
 #, python-format
 msgid "Relation '%s' not exist."
 msgstr "Отношения '%s' не существует."
 
-#: views.py:33
+#: views.py:52
 msgid "You don't have access to this page."
 msgstr "Вы не имеете доступа на эту страницу."
 
-#: views.py:36
+#: views.py:55
 msgid "You don't have access to this application."
 msgstr "Вы не имеете доступа к этому приложению."
 
-#: views.py:38
+#: views.py:57
 msgid "Application is disabled."
 msgstr "Приложение отключено."
 
-#: views.py:42
+#: views.py:61
 msgid "Application not found."
 msgstr "Приложение не найдено."
 
-#: views.py:46
+#: views.py:65
 msgid "Model not found."
 msgstr "Модель не найдена."
 
-#: views.py:48
+#: views.py:67
 msgid "Model is disabled."
 msgstr "Модель отключена."
 
-#: views.py:51
+#: views.py:70
 msgid "You don't have access to this model."
 msgstr "Вы не имеете доступа к этой модели."
 
-#: views.py:60
+#: views.py:79
 msgid "You don't have access to this action."
 msgstr "Вы не имеете доступа к этому действию."
 
-#: views.py:62
+#: views.py:81
 msgid "Object not found."
 msgstr "Объект не найден."
 
-#: views.py:66
+#: views.py:85
 msgid "Not implemented."
 msgstr "Не реализовано."

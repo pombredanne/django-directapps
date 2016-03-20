@@ -24,12 +24,10 @@ from __future__ import unicode_literals
 from django.apps import apps as django_apps
 from django.http import (HttpResponseBadRequest, HttpResponseForbidden,
                          HttpResponseNotFound, HttpResponseServerError)
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import FieldError, PermissionDenied
 from django.core.paginator import EmptyPage
 from django.core.urlresolvers import reverse
-from django.shortcuts import render
 from django.utils import six
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
