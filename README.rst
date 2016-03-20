@@ -10,6 +10,9 @@ external client application. There are no templates for formatting and
 displaying of data on the client. Only JSON. Only direct data. All quickly and
 sharply.
 
+.. note::
+    The client application must support cookies, parse "csrftoken" and send
+    it as `X-CSRFToken` header in `POST`, `PUT`, `PATCH` and `DELETE` requests.
 
 Installation
 ------------
@@ -37,6 +40,43 @@ Change your next project files.
     ]
 
 Enjoy!
+
+Testing
+-------
+
+You can look at the example works in the JavaScript console and use it as a test.
+
+.. code-block:: javascript
+
+    function getCookie(cname) {
+        var name = cname + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0; i<ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1);
+            if (c.indexOf(name) == 0) return c.substring(name.length,c.length);
+        }
+        return "";
+    }
+
+    function getResponse(method, url, data) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(method, url, false);
+        if (!(/^(GET|HEAD|OPTIONS|TRACE)$/.test(method.toUpperCase()))) {
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        }
+        xhr.send(data);
+        if (xhr.status == 200) return JSON.parse(xhr.responseText);
+        console.error(xhr.responseText);
+    }
+
+    var group1 = getResponse('post', '/apps/auth/group/', 'name=Operators 1'),
+        group2 = getResponse('post', '/apps/auth/group/', 'name=Operators 2');
+
+    getResponse('get', '/apps/auth/group/');
+    getResponse('delete', '/apps/auth/group/', 'id='+group1.pk+','+group2.pk);
+
 
 Settings
 --------
