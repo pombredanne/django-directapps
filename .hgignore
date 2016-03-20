@@ -1,0 +1,13 @@
+syntax:glob
+
+*.egg-info
+*.pot
+*.py[co]
+__pycache__
+MANIFEST
+dist/
+docs/_build/
+build/
+example/media/
+*.sqlite
+.git/
