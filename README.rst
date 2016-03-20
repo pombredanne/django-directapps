@@ -74,7 +74,7 @@ You can look at the example works in the JavaScript console and use it as a test
     var group1 = getResponse('post', '/apps/auth/group/', 'name=Operators 1'),
         group2 = getResponse('post', '/apps/auth/group/', 'name=Operators 2');
 
-    getResponse('get', '/apps/auth/group/');
+    getResponse('get', '/apps/auth/group/?o=name,-id&q=operators&p=1&l=3&id__gte=1');
     getResponse('delete', '/apps/auth/group/', 'id='+group1.pk+','+group2.pk);
 
 

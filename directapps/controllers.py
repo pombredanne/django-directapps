@@ -456,7 +456,7 @@ class ModelController(BaseController):
 
     def action_get(self, request, **kwargs):
         """Стандартное получение данных."""
-        REQUEST = request.GET.copy()
+        REQUEST = {k: request.GET[k] for k in request.GET.keys()}
         page  = REQUEST.pop(self.page_key, None)
         page  = int(page or 1)
         limit = REQUEST.pop(self.limit_key, None)
