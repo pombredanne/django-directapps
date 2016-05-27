@@ -22,6 +22,7 @@
 from __future__ import unicode_literals
 import weakref
 
+from django.contrib.auth.hashers import mask_hash
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
@@ -34,7 +35,7 @@ from django.utils.encoding import force_text
 from django.utils.module_loading import import_string
 from django.utils.translation import ugettext_lazy as _
 
-from directapps.conf import CONTROLLERS, ATTRIBUTE_NAME
+from directapps.conf import CONTROLLERS, ATTRIBUTE_NAME, MASK_PASSWORD_FIELDS
 from directapps.exceptions import ValidationError, NotExistError
 from directapps.shortcuts import smart_search
 from directapps.utils import serialize_field
@@ -120,16 +121,19 @@ class BaseController(object):
             qs = qs.filter(**self.queryset_filters)
         return qs
 
-    def render_field(self, request, row, field):
+    def render_field(self, request, obj, field):
         """Рендерит поле объекта модели."""
         if '.' in field:
-            data = row
+            data = obj
             for part in field.split('.'):
                 if data is None:
                     break
                 data = getattr(data, part, None)
+            field = part
         else:
-            data = getattr(row, field, None)
+            data = getattr(obj, field, None)
+        if MASK_PASSWORD_FIELDS and field == 'password' and data:
+            return mask_hash(data)
         if isinstance(data, FieldFile):
             if data.name:
                 return data.url
@@ -303,6 +307,7 @@ class BaseController(object):
 
 
 class ModelController(BaseController):
+    """Контроллер операций с коллекцией объектов (моделью)."""
     columns = None # список колонок: [('id', 'ID'), ('title', 'Название')]
     order_columns = None # список имён колонок, по которым можно делать
                          # сортировку
@@ -357,17 +362,17 @@ class ModelController(BaseController):
         }
         return data
 
-    def render_column(self, request, row, column):
+    def render_column(self, request, obj, column):
         """Рендерит колонку для записи из базы данных."""
         if column in ('__unicode__', '__str__'):
-            return force_text(row)
+            return force_text(obj)
         column = column.replace('__', '.')
         display = 'get_%s_display' % column
-        if hasattr(row, display):
+        if hasattr(obj, display):
             # It's a choice field
-            return getattr(row, display)()
+            return getattr(obj, display)()
         else:
-            return self.render_field(request, row, column)
+            return self.render_field(request, obj, column)
 
     def render_objects(self, request, qs):
         """Рендерит весь полученный QuerySet."""
@@ -484,6 +489,7 @@ class ModelController(BaseController):
 
 
 class RelationController(ModelController):
+    """Контроллер операций со связанными моделями."""
 
     def __init__(self, rel):
         """Инициализация."""
@@ -498,6 +504,7 @@ class RelationController(ModelController):
 
 
 class ObjectController(BaseController):
+    """Контроллер операций с объектом."""
 
     relations = None # список связанных моделей с их названиями [('orders', 'Заказы'),]
     map_relation_ctrl = None # карта связанных моделей и их контроллеров
@@ -584,7 +591,7 @@ class MasterController(object):
         self.object_ctrl = self.object_ctrl_class(self.model)
 
     def routing(self, request, **kwargs):
-        """Обеспечивает маршрутизацию к суб-котроллерам."""
+        """Обеспечивает маршрутизацию к суб-контроллерам."""
         if 'object' in kwargs:
             return self.object_ctrl.routing(request, **kwargs)
         return self.model_ctrl.routing(request, **kwargs)

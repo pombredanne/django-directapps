@@ -83,3 +83,5 @@ def serialize_field(f):
         m = f.related_model._meta
         data['relation'] = '%s.%s' % (m.app_label, m.model_name)
     return data
+
+

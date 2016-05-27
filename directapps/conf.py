@@ -28,6 +28,7 @@ EXCLUDE_APPS = conf.get('EXCLUDE_APPS', ())
 EXCLUDE_MODELS = conf.get('EXCLUDE_MODELS', ())
 ACCESS_FUNCTION = conf.get('ACCESS_FUNCTION', None)
 JSON_DUMPS_PARAMS = conf.get('JSON_DUMPS_PARAMS', {'indent': 2, 'ensure_ascii': False})
+MASK_PASSWORD_FIELDS = conf.get('MASK_PASSWORD_FIELDS', True)
 
 if ACCESS_FUNCTION:
     from django.utils.module_loading import import_string
