@@ -123,7 +123,7 @@ By default is blank.
 
 ACCESS_FUNCTION
 ~~~~~~~~~~~~~~~
-Function that checks access to pages.
+Function that checks access to resources.
 By default is `None` and uses internal function.
 
 JSON_DUMPS_PARAMS
@@ -135,4 +135,13 @@ MASK_PASSWORD_FIELDS
 ~~~~~~~~~~~~~~~~~~~~
 The options for masking all the fields with the name "password".
 By default is `True`.
+
+
+Contributing
+------------
+If you want to translate the app into your language or to offer a more
+competent application code, you can do so using the "Pull Requests" on `github`_.
+
+.. _github: https://github.com/rosix-ru/django-directapps/
+
 
