@@ -10,7 +10,7 @@ external client application. There are no templates for formatting and
 displaying of data on the client. Only JSON. Only direct data. All quickly and
 sharply.
 
-.. note::
+.. important::
     The client application must support cookies, parse "csrftoken" and send
     it as `X-CSRFToken` header in `POST`, `PUT`, `PATCH` and `DELETE` requests.
 
@@ -38,6 +38,23 @@ Change your next project files.
         url(r'^apps/', include('directapps.urls', namespace="directapps")),
         ...
     ]
+
+Start the development server Django, if it is not running.
+
+Now you can open a browser to this address to see a list of available
+applications and links to data schematics for each.
+
+Note, unlike many of the application with REST, a description of the data for
+client applications is not transmitted with every call, and exists as a
+separate resource, allowing you to do everything faster. This means that:
+
+1. The client gets the list of available applications.
+2. Gets application schema which describes what data can be provided and
+   on what resource they are.
+3. And only then begin to work with the data.
+4. The client application is responsible for the maintenance of relations
+   between data models for fields with external links have the attribute
+   "relation" that contains the full name of the relation.
 
 Enjoy!
 
@@ -113,4 +130,9 @@ JSON_DUMPS_PARAMS
 ~~~~~~~~~~~~~~~~~
 The options for creating JSON.
 By default is ``{'indent': 2, 'ensure_ascii': False}``.
+
+MASK_PASSWORD_FIELDS
+~~~~~~~~~~~~~~~~~~~~
+The options for masking all the fields with the name "password".
+By default is `True`.
 
