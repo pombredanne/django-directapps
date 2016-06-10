@@ -20,6 +20,8 @@
 #
 
 from __future__ import unicode_literals
+import json
+from hashlib import md5
 
 from django.apps import apps as django_apps
 from django.http import (HttpResponseBadRequest, HttpResponseForbidden,
@@ -35,6 +37,7 @@ from django.utils.translation import ugettext_lazy as _
 from directapps.conf import access, EXCLUDE_APPS, EXCLUDE_MODELS, JSON_DUMPS_PARAMS
 from directapps.controllers import get_controller
 from directapps.decorators import parse_rest
+from directapps.encoders import JSONEncoder
 from directapps.exceptions import ValidationError, NotExistError
 from directapps.response import JsonResponse
 from directapps.utils import get_model_perms, has_model_perms, is_m2m_layer
@@ -87,7 +90,8 @@ def director(request, app=None, model=None, **kwargs):
             # Возвращаем схему приложения, включая полные схемы моделей
             data = get_scheme_app(request, app, True)
     else:
-        # Возвращаем список схем приложений, исключая полные схемы моделей
+        # Возвращаем общую схему всех приложений "первого уровня".
+        # То есть, исключая полные схемы моделей внутри каждого приложения.
         data = get_scheme_apps(request)
 
     return JsonResponse(data, safe=False, json_dumps_params=JSON_DUMPS_PARAMS)
@@ -141,7 +145,7 @@ def get_scheme_app(request, app, include_model_schemes):
     return None
 
 def get_scheme_apps(request):
-    """Возвращает список доступных приложений и заголовки моделей в них."""
+    """Возвращает общую схему "первого уровня" для всех доступных приложений."""
     user = request.user
     data = []
     for app in django_apps.get_app_configs():
@@ -151,6 +155,9 @@ def get_scheme_apps(request):
         A = get_scheme_app(request, app, False)
         if A:
             data.append(A)
-    return data
+    return {
+        'checksum': md5(json.dumps(data, cls=JSONEncoder)).hexdigest(),
+        'apps': data
+    }
 
 

@@ -25,7 +25,6 @@ import datetime
 import os
 import subprocess
 
-
 def get_version(version=None):
     "Returns a PEP 386-compliant version number from VERSION."
     version = get_complete_version(version)
@@ -49,7 +48,6 @@ def get_version(version=None):
 
     return str(major + sub)
 
-
 def get_docs_version(version=None):
     version = get_complete_version(version)
     if version[3] != 'final':
@@ -57,14 +55,12 @@ def get_docs_version(version=None):
     else:
         return '%d.%d' % version[:2]
 
-
 def get_major_version(version=None):
     "Returns major version from VERSION."
     version = get_complete_version(version)
     parts = 2 if version[2] == 0 else 3
     major = '.'.join(str(x) for x in version[:parts])
     return major
-
 
 def get_complete_version(version=None):
     """Returns a tuple of the directapps version. If version argument is non-empty,
@@ -95,3 +91,4 @@ def get_git_changeset():
     except ValueError:
         return None
     return timestamp.strftime('%Y%m%d%H%M%S')
+

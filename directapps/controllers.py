@@ -156,6 +156,7 @@ class BaseController(object):
             return {
                 'fields': {f: render(request, o, f) for f in fields},
                 'pk': o.pk,
+                'display_name': force_text(o),
                 'url': reverse('directapps:object', args=reverse_args)
             }
         return map(serialize, qs)
@@ -387,6 +388,7 @@ class ModelController(BaseController):
             return {
                 'fields': {f: render(request, o, f) for f in fields},
                 'pk': o.pk,
+                'display_name': force_text(o),
                 'url': reverse('directapps:object', args=reverse_args)
             }
         return map(serialize, qs)
@@ -502,11 +504,17 @@ class RelationController(ModelController):
         qs = qs.filter(**{'%s__exact' % self.field_name: object})
         return qs
 
+    def get_scheme(self, request, **kwargs):
+        data = super(RelationController, self).get_scheme(request, **kwargs)
+        data['rel'] = force_text(self.model._meta)
+        return data
+
 
 class ObjectController(BaseController):
     """Контроллер операций с объектом."""
 
-    relations = None # список связанных моделей с их названиями [('orders', 'Заказы'),]
+    # Эти 2 параметра определяются совместно
+    relations = None # список связанных моделей с их названиями [('order', 'Заказы'),]
     map_relation_ctrl = None # карта связанных моделей и их контроллеров
 
     def __init__(self, *args, **kwargs):
@@ -533,10 +541,9 @@ class ObjectController(BaseController):
         или обновлять объекты модели.
 
         """
-        relations = self.map_relation_ctrl.values()
         data = {
             'fields': self.serialized_fields,
-            'relations': [r.get_scheme(request) for r in relations],
+            'relations': self.relations,
         }
         return data
 
