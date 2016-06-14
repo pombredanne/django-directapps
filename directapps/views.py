@@ -126,7 +126,8 @@ def get_scheme_app(request, app, include_model_schemes):
             'name': app.label,
             'display_name': force_text(app.verbose_name),
             'models': models,
-            'url': reverse('directapps:app', args=(app.label,))
+            'url': reverse('directapps:app', args=(app.label,)),
+            'complete': include_model_schemes
         }
         for model_name, model in six.iteritems(app.models):
             if is_m2m_layer(model):

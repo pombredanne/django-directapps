@@ -506,7 +506,7 @@ class RelationController(ModelController):
 
     def get_scheme(self, request, **kwargs):
         data = super(RelationController, self).get_scheme(request, **kwargs)
-        data['rel'] = force_text(self.model._meta)
+        data['relation'] = force_text(self.model._meta)
         return data
 
 
