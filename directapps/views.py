@@ -34,7 +34,8 @@ from django.utils import six
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
-from directapps.conf import access, EXCLUDE_APPS, EXCLUDE_MODELS, JSON_DUMPS_PARAMS
+from directapps.conf import (access, EXCLUDE_APPS, EXCLUDE_MODELS,
+    JSON_DUMPS_PARAMS, CHECKSUM_VERSION)
 from directapps.controllers import get_controller
 from directapps.decorators import parse_rest
 from directapps.encoders import JSONEncoder
@@ -156,8 +157,10 @@ def get_scheme_apps(request):
         A = get_scheme_app(request, app, False)
         if A:
             data.append(A)
+    cs = md5(CHECKSUM_VERSION)
+    cs.update(json.dumps(data, cls=JSONEncoder))
     return {
-        'checksum': md5(json.dumps(data, cls=JSONEncoder)).hexdigest(),
+        'checksum': cs.hexdigest(),
         'apps': data
     }
 
