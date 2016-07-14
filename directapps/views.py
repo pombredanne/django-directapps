@@ -26,7 +26,6 @@ from hashlib import md5
 from django.apps import apps as django_apps
 from django.http import (HttpResponseBadRequest, HttpResponseForbidden,
                          HttpResponseNotFound, HttpResponseServerError)
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import FieldError, PermissionDenied
 from django.core.paginator import EmptyPage
 from django.core.urlresolvers import reverse
@@ -44,7 +43,6 @@ from directapps.response import JsonResponse
 from directapps.utils import get_model_perms, has_model_perms, is_m2m_layer
 
 @parse_rest
-@login_required
 def director(request, app=None, model=None, **kwargs):
     """
     Главный распределитель запросов к моделям приложений.
@@ -52,6 +50,8 @@ def director(request, app=None, model=None, **kwargs):
     В `kwargs` могут быть: object, relation, relation_object и action.
     """
     user = request.user
+    if not user.is_authenticated():
+        return HttpResponseBadRequest(_("You need to login."), status=401)
     if not access(request):
         return HttpResponseForbidden(_("You don't have access to this page."))
     if app:
