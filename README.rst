@@ -136,6 +136,11 @@ MASK_PASSWORD_FIELDS
 The options for masking all the fields with the name "password".
 By default is `True`.
 
+CHECKSUM_VERSION
+~~~~~~~~~~~~~~~~
+The options for the checksum compilation of the scheme.
+By default is `"1"`.
+
 
 Contributing
 ------------
