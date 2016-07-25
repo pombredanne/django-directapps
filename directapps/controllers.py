@@ -355,7 +355,7 @@ class ModelController(BaseController):
             'order_columns': self.order_columns,
             'map_column_relation': self.map_column_relation,
             'ordering_key': self.ordering_key,
-            'search_key': self.search_key,
+            'search_key': self.search_key if self.search_fields else None,
             'limit_key': self.limit_key,
             'page_key': self.page_key,
             'limit': self.limit,
@@ -605,10 +605,9 @@ class MasterController(object):
 
     def get_scheme(self, request, **kwargs):
         """Возвращает полную схему модели."""
-        return {
-            'model': self.model_ctrl.get_scheme(request),
-            'object': self.object_ctrl.get_scheme(request),
-        }
+        scheme = self.model_ctrl.get_scheme(request)
+        scheme['object'] = self.object_ctrl.get_scheme(request)
+        return scheme
 
 
 def get_controller(model):
