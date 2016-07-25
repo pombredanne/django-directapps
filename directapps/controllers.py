@@ -543,7 +543,12 @@ class ObjectController(BaseController):
         """
         data = {
             'fields': self.serialized_fields,
-            'relations': self.relations,
+            'relations': [
+                {
+                    'name': r[0],
+                    'display_name': r[1]
+                } for r in self.relations
+            ],
         }
         return data
 
