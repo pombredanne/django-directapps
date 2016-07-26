@@ -340,8 +340,8 @@ class ModelController(BaseController):
             self.order_columns = [f.name for f in self.visible_fields \
                                                if not f.related_model]
         if self.search_fields is None:
-            self.search_fields = [f.name for f in self.visible_fields \
-                                               if isinstance(f, CharField)]
+            self.search_fields = [f.name for f in self.visible_fields if
+                            isinstance(f, CharField) and f.name != 'password']
 
     def get_scheme(self, request, **kwargs):
         """
