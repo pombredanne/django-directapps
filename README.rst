@@ -106,6 +106,11 @@ ATTRIBUTE_NAME
 The name of the attribute in the model that is bound to the controller.
 By default is `directapps_controller`.
 
+MASTER_CONTROLLER
+~~~~~~~~~~~~~~~~~
+Class (as string for import) of the master controller, which is used by default.
+By default is `None` and uses internal class.
+
 CONTROLLERS
 ~~~~~~~~~~~
 Dictionary own controllers for models of third-party applications.

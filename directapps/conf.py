@@ -23,6 +23,7 @@ from django.conf import settings
 
 conf = getattr(settings, 'DIRECTAPPS', {})
 ATTRIBUTE_NAME = conf.get('ATTRIBUTE_NAME', 'directapps_controller')
+MASTER_CONTROLLER = conf.get('MASTER_CONTROLLER', None)
 CONTROLLERS = conf.get('CONTROLLERS', {})
 EXCLUDE_APPS = conf.get('EXCLUDE_APPS', ())
 EXCLUDE_MODELS = conf.get('EXCLUDE_MODELS', ())

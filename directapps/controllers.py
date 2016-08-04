@@ -35,7 +35,8 @@ from django.utils.encoding import force_text
 from django.utils.module_loading import import_string
 from django.utils.translation import ugettext_lazy as _
 
-from directapps.conf import CONTROLLERS, ATTRIBUTE_NAME, MASK_PASSWORD_FIELDS
+from directapps.conf import (MASTER_CONTROLLER, CONTROLLERS,
+    ATTRIBUTE_NAME, MASK_PASSWORD_FIELDS)
 from directapps.exceptions import ValidationError, NotExistError
 from directapps.shortcuts import smart_search
 from directapps.utils import serialize_field
@@ -624,6 +625,8 @@ def get_controller(model):
         ctrl = CONTROLLERS.get('%s.%s' % (m.app_label, m.model_name))
         if ctrl:
             ctrl = import_string(ctrl)()
+        elif MASTER_CONTROLLER:
+            ctrl = import_string(MASTER_CONTROLLER)()
         else:
             ctrl = MasterController()
         model.add_to_class(name, ctrl)
