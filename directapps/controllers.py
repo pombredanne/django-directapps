@@ -73,9 +73,11 @@ class BaseController(object):
     exclude_fields = () # список полей, которые следует пропустить при
                         # формировании контроллеров
     select_related = None # определяет связанные объекты, которые нужно
-                          # получить полностью за запрос
+                          # получить полностью за запрос, если нужно
+                          # запретить это, то ставить False
     prefetch_related = None # определяет список m2m полей, которые нужно
-                            # получить за раз, дополнительно к запросу
+                            # получить за раз, дополнительно к запросу,
+                            # если нужно запретить это, то ставить False
     queryset_filters = None # словарь фильтров, которые всегда добавляются
                             # к QuerySet в методе get_queryset()
 
@@ -474,13 +476,13 @@ class ModelController(BaseController):
         filters  = REQUEST
         # Получаем весь QuerySet вместе с зависимыми объектами
         qs = self.get_queryset(request, **kwargs) # **kwargs нужен наследникам!
-        if self.select_related is not None:
+        if isinstance(self.select_related, (list, tuple)):
             qs = qs.select_related(*self.select_related)
-        else:
+        elif self.select_related:
             qs = qs.select_related()
-        if self.prefetch_related is not None:
+        if isinstance(self.prefetch_related, (list, tuple)):
             qs = qs.prefetch_related(*self.prefetch_related)
-        else:
+        elif self.prefetch_related:
             qs = qs.prefetch_related()
         # Отфильтровываем, отсортировываем и рендерим результат.
         qs   = self.filtering(request, qs, filters)
@@ -629,6 +631,9 @@ def get_controller(model):
             ctrl = import_string(MASTER_CONTROLLER)()
         else:
             ctrl = MasterController()
+        model.add_to_class(name, ctrl)
+    elif not isinstance(getattr(model, name), MasterController):
+        ctrl = getattr(model, name)()
         model.add_to_class(name, ctrl)
     return getattr(model, name)
 
