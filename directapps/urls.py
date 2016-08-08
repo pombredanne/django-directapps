@@ -21,7 +21,7 @@
 
 from django.conf.urls import url, include
 
-from directapps.views import director
+from directapps.views import director, version
 
 rel_patterns = [
     url(r'^$', director, name='relation'),
@@ -49,6 +49,7 @@ app_patterns = [
 
 urlpatterns = [
     url(r'^$', director, name='apps'),
+    url(r'^_version/$', version, name='version'),
     url(r'^(?P<app>\w+)/', include(app_patterns)),
 ]
 

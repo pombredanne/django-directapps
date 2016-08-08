@@ -98,6 +98,13 @@ def director(request, app=None, model=None, **kwargs):
 
     return JsonResponse(data, safe=False, json_dumps_params=JSON_DUMPS_PARAMS)
 
+def version(request):
+    data = {
+        'checksum': CHECKSUM_VERSION,
+        'directapps': __version__,
+    }
+    return JsonResponse(data, json_dumps_params=JSON_DUMPS_PARAMS)
+
 ###############################################################################
 
 def get_scheme_model(request, model, full):
