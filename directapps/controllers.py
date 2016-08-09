@@ -312,7 +312,9 @@ class BaseController(object):
 
 class ModelController(BaseController):
     """Контроллер операций с коллекцией объектов (моделью)."""
-    columns = None # список колонок: [('id', 'ID'), ('title', 'Название')]
+    # Список колонок состоит из словарей, сформированных с помощью функции
+    # serialize_field()
+    columns = None
     order_columns = None # список имён колонок, по которым можно делать
                          # сортировку
     search_fields = None # список полей для общего поиска (см.`search_key`)
@@ -338,7 +340,7 @@ class ModelController(BaseController):
             self.map_column_relation = {}
 
         if self.columns is None:
-            self.columns = [(f.name, f.verbose_name) for f in self.visible_fields]
+            self.columns = [serialize_field(f) for f in self.visible_fields]
         if self.order_columns is None:
             self.order_columns = [f.name for f in self.visible_fields \
                                                if not f.related_model]
@@ -382,7 +384,7 @@ class ModelController(BaseController):
         """Рендерит весь полученный QuerySet."""
         render = self.render_column
         M = self.map_column_field
-        fields = [M.get(col, col) for col,label in self.columns]
+        fields = [M.get(col['name'], col['name']) for col in self.columns]
         meta = self.model._meta
         app_label  = meta.app_label
         model_name = meta.model_name
