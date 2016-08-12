@@ -503,6 +503,7 @@ class RelationController(ModelController):
         super(RelationController, self).__init__(rel.related_model)
         self.rel = rel
         self.field_name = rel.field.name
+        self.relation_name = force_text(self.model._meta)
 
     def get_queryset(self, request, object, **kwargs):
         qs = super(RelationController, self).get_queryset(request)
@@ -511,7 +512,7 @@ class RelationController(ModelController):
 
     def get_scheme(self, request, **kwargs):
         data = super(RelationController, self).get_scheme(request, **kwargs)
-        data['relation'] = force_text(self.model._meta)
+        data['relation'] = self.relation_name
         return data
 
 
@@ -551,7 +552,8 @@ class ObjectController(BaseController):
             'relations': [
                 {
                     'name': r[0],
-                    'display_name': r[1]
+                    'display_name': r[1],
+                    'relation': self.map_relation_ctrl[r[0]].relation_name
                 } for r in self.relations
             ],
         }
