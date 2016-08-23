@@ -345,8 +345,19 @@ class ModelController(BaseController):
             self.order_columns = [f.name for f in self.visible_fields \
                                                if not f.related_model]
         if self.search_fields is None:
-            self.search_fields = [f.name for f in self.visible_fields if
+            fields = [f.name for f in self.visible_fields if
                             isinstance(f, CharField) and f.name != 'password']
+            if not fields:
+                for field in self.visible_fields:
+                    rel = field.related_model
+                    if rel:
+                        prefix = field.name + '__%s'
+                        fields.extend([
+                            prefix % f.name for f in rel._meta.fields if
+                            not f.hidden and isinstance(f, CharField) and
+                            f.name != 'password'
+                        ])
+            self.search_fields = fields
 
     def get_scheme(self, request, **kwargs):
         """
