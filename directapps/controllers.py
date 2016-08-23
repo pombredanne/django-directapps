@@ -339,8 +339,8 @@ class ModelController(BaseController):
         if self.map_column_relation is None:
             self.map_column_relation = {}
 
-        if self.columns is None:
-            self.columns = [serialize_field(f) for f in self.visible_fields]
+        self.autoset_columns()
+
         if self.order_columns is None:
             self.order_columns = [f.name for f in self.visible_fields \
                                                if not f.related_model]
@@ -358,6 +358,10 @@ class ModelController(BaseController):
                             f.name != 'password'
                         ])
             self.search_fields = fields
+
+    def autoset_columns(self):
+        if self.columns is None:
+            self.columns = [serialize_field(f) for f in self.visible_fields]
 
     def get_scheme(self, request, **kwargs):
         """
@@ -511,10 +515,15 @@ class RelationController(ModelController):
 
     def __init__(self, rel):
         """Инициализация."""
-        super(RelationController, self).__init__(rel.related_model)
         self.rel = rel
         self.field_name = rel.field.name
+        super(RelationController, self).__init__(rel.related_model)
         self.relation_name = force_text(self.model._meta)
+
+    def autoset_columns(self):
+        if self.columns is None:
+            self.columns = [serialize_field(f) for f in self.visible_fields if
+                            f.name != self.field_name]
 
     def get_queryset(self, request, object, **kwargs):
         qs = super(RelationController, self).get_queryset(request)
