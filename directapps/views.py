@@ -110,7 +110,7 @@ def version(request):
 def get_scheme_model(request, model, full):
     """Возвращает полную или неполную схему модели."""
     user = request.user
-    if has_model_perms(user, model): #and site.is_registered(model):
+    if has_model_perms(user, model):
         meta = model._meta
         M = {
             'name': meta.model_name,
@@ -120,7 +120,7 @@ def get_scheme_model(request, model, full):
         if user.is_superuser:
             M['perms'] = 'all'
         else:
-            M['perms'] = get_model_perms(user, model)
+            M['perms'] = list(get_model_perms(user, model))
         if full:
             M.update(get_controller(model).get_scheme(request))
         return M
