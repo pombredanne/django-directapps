@@ -80,6 +80,9 @@ class BaseController(object):
                             # если нужно запретить это, то ставить False
     queryset_filters = None # словарь фильтров, которые всегда добавляются
                             # к QuerySet в методе get_queryset()
+    search_key  = 'q' # ключ, по которому принимаются данные для поиска
+    foreign_key = 'f' # ключ, по которому с клиента принимается имя поля или
+                      # колонки с внешним соединением (для действия "_fkey")
 
     def __init__(self, model_or_manager, **kwargs):
         """Инициализация с помощью менеджера модели."""
@@ -309,6 +312,27 @@ class BaseController(object):
         """Возвращает схему контроллера."""
         return self.get_scheme(request, **kwargs)
 
+    # Поиск по внешней модели.
+    def action_fkey(self, request, **kwargs):
+        """Возвращает данные для модели внешнего соединения."""
+        REQUEST = {k: request.GET[k] for k in request.GET.keys()}
+        query = REQUEST.get(self.search_key, None)
+        fname = REQUEST.get(self.foreign_key, None)
+        # Следующее выполняется только для модели.
+        if hasattr(self, 'map_column_field'):
+            if fname in self.map_column_field:
+                fname = self.map_column_field[fname]
+            elif fname not in self.all_fields_names:
+                fname = None
+        try:
+            assert fname is not None
+            field = self.model._meta.get_field(fname)
+            assert field.rel is not None
+        except:
+            raise ValidationError(_('Please send correct relation name.'))
+        ctrl = get_controller(field.rel.model)
+        return ctrl.model_ctrl.simple_search(request, query)
+
 
 class ModelController(BaseController):
     """Контроллер операций с коллекцией объектов (моделью)."""
@@ -321,7 +345,6 @@ class ModelController(BaseController):
     map_column_field = None # связывание колонок с реальными полями
     map_column_relation = None # связывание колонок с другими моделями на клиенте
     ordering_key = 'o' # ключ, по которому с клиента принимается сортировка
-    search_key   = 'q' # ключ, по которому с клиента принимается общий поиск
     limit_key    = 'l' # ключ, по которому с клиента принимается лимит записей
     page_key     = 'p' # ключ, по которому с клиента принимается № страницы
     limit     = 10 # рабочий лимит возвращаемых записей
@@ -378,6 +401,7 @@ class ModelController(BaseController):
             'search_key': self.search_key if self.search_fields else None,
             'limit_key': self.limit_key,
             'page_key': self.page_key,
+            'foreign_key': self.foreign_key,
             'limit': self.limit,
             'max_limit': self.max_limit,
         }
@@ -423,6 +447,10 @@ class ModelController(BaseController):
         exists = lambda f: f in map_keys or f in field_names
 
         def parse_filter(f):
+            inverse = False
+            if f.startswith('-'):
+                inverse = True
+                f = f[1:]
             op = 'exact'
             if '__' in f:
                 l = f.split('__')
@@ -433,20 +461,24 @@ class ModelController(BaseController):
                     f = '__'.join(l[:-1])
                     op = l[-1]
             elif not exists(f):
-                return None, None
-            return self.map_column_field.get(f, f), op
+                return None, None, None
+            return self.map_column_field.get(f, f), op, inverse
 
         for f, query in filters.items():
             if f == self.search_key:
                 qs = smart_search(qs, self.search_fields, query)
                 continue
-            field, op = parse_filter(f)
+            field, op, inverse = parse_filter(f)
             if field:
                 if op == 'isnull':
                     query = bool(query == 'true')
                 elif op in ('in', 'range'):
                     query = query.split(',')
-                qs = qs.filter(Q(**{'%s__%s' % (field, op): query}))
+                if inverse:
+                    func = qs.exclude
+                else:
+                    func = qs.filter
+                qs = func(Q(**{'%s__%s' % (field, op): query}))
         return qs
 
     def ordering(self, request, qs, ordering):
@@ -509,6 +541,21 @@ class ModelController(BaseController):
         ctx  = self.context(request, page, info)
         return ctx
 
+    def simple_search(self, request, query):
+        """Простой поиск объектов модели."""
+        qs = self.get_queryset(request)
+        if query:
+            if not self.search_fields:
+                qs = qs.filter(pk=query)
+            else:
+                qs = self.filtering(request, qs, {self.search_key: query})
+        def serialize(o):
+            return {
+                'pk': o.pk,
+                'display_name': force_text(o),
+            }
+        return map(serialize, qs[:10])
+
 
 class RelationController(ModelController):
     """Контроллер операций со связанными моделями."""
@@ -534,6 +581,10 @@ class RelationController(ModelController):
         data = super(RelationController, self).get_scheme(request, **kwargs)
         data['relation'] = self.relation_name
         return data
+
+    def action_fkey(self, request, **kwargs):
+        """Заблокировано для реляций."""
+        raise ValidationError(_('This action is blocked for this type of models.'))
 
 
 class ObjectController(BaseController):
@@ -576,6 +627,8 @@ class ObjectController(BaseController):
                     'relation': self.map_relation_ctrl[r[0]].relation_name
                 } for r in self.relations
             ],
+            'foreign_key': self.foreign_key,
+            'search_key': self.search_key,
         }
         return data
 
