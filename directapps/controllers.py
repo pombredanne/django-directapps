@@ -344,6 +344,7 @@ class ModelController(BaseController):
     search_fields = None # список полей для общего поиска (см.`search_key`)
     map_column_field = None # связывание колонок с реальными полями
     map_column_relation = None # связывание колонок с другими моделями на клиенте
+    columns_key  = 'c' # ключ, по которому принимается список полей для рендеринга
     ordering_key = 'o' # ключ, по которому с клиента принимается сортировка
     limit_key    = 'l' # ключ, по которому с клиента принимается лимит записей
     page_key     = 'p' # ключ, по которому с клиента принимается № страницы
@@ -383,8 +384,12 @@ class ModelController(BaseController):
             self.search_fields = fields
 
     def autoset_columns(self):
+        def test(f):
+            return bool(hasattr(f, 'auto_now_add') or
+                        hasattr(f, 'auto_now') or not f.hidden)
+
         if self.columns is None:
-            self.columns = [serialize_field(f) for f in self.visible_fields]
+            self.columns = [serialize_field(f) for f in self.all_fields if test(f)]
 
     def get_scheme(self, request, **kwargs):
         """
@@ -397,6 +402,7 @@ class ModelController(BaseController):
             'default_ordering': self.default_ordering,
             'order_columns': self.order_columns,
             'map_column_relation': self.map_column_relation,
+            'columns_key': self.columns_key,
             'ordering_key': self.ordering_key,
             'search_key': self.search_key if self.search_fields else None,
             'limit_key': self.limit_key,
@@ -419,11 +425,12 @@ class ModelController(BaseController):
         else:
             return self.render_field(request, obj, column)
 
-    def render_objects(self, request, qs):
+    def render_objects(self, request, qs, columns=None):
         """Рендерит весь полученный QuerySet."""
         render = self.render_column
         M = self.map_column_field
-        fields = [M.get(col['name'], col['name']) for col in self.columns]
+        fields = [M.get(col['name'], col['name']) for col in self.columns if
+                  columns is None or col['name'] in columns]
         meta = self.model._meta
         app_label  = meta.app_label
         model_name = meta.model_name
@@ -502,10 +509,10 @@ class ModelController(BaseController):
         """Возвращает информацию о наборе. Для переопределения."""
         return None
 
-    def context(self, request, page, info):
+    def context(self, request, page, info, columns):
         """Формирование контекста JSON структуры."""
         data =  {
-            'objects': self.render_objects(request, page.object_list),
+            'objects': self.render_objects(request, page.object_list, columns),
             'page': page.number,
             'num_pages': page.paginator.num_pages,
             'info': info,
@@ -522,6 +529,9 @@ class ModelController(BaseController):
         if limit > self.max_limit:
             limit = self.max_limit
         ordering = REQUEST.pop(self.ordering_key, None)
+        columns = REQUEST.pop(self.columns_key, None)
+        if columns is not None:
+            columns = columns.split(',')
         filters  = REQUEST
         # Получаем весь QuerySet вместе с зависимыми объектами
         qs = self.get_queryset(request, **kwargs) # **kwargs нужен наследникам!
@@ -538,7 +548,7 @@ class ModelController(BaseController):
         info = self.info(request, qs)
         qs   = self.ordering(request, qs, ordering)
         page = self.paging(request, qs, page, limit)
-        ctx  = self.context(request, page, info)
+        ctx  = self.context(request, page, info, columns)
         return ctx
 
     def simple_search(self, request, query):

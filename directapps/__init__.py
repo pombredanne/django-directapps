@@ -23,6 +23,6 @@ from directapps.version import get_version, get_docs_version
 
 default_app_config = 'directapps.apps.AppConfig'
 
-VERSION = (0, 4, 0, 'alpha', 7)
+VERSION = (0, 4, 0, 'alpha', 8)
 
 __version__ = get_version(VERSION)
