@@ -26,7 +26,8 @@ from hashlib import md5
 from django.apps import apps as django_apps
 from django.http import (HttpResponseBadRequest, HttpResponseForbidden,
                          HttpResponseNotFound, HttpResponseServerError)
-from django.core.exceptions import FieldError, PermissionDenied
+from django.core.exceptions import (FieldError, PermissionDenied,
+    ValidationError as DjangoValidationError)
 from django.core.paginator import EmptyPage
 from django.core.urlresolvers import reverse
 from django.utils import six
@@ -80,6 +81,8 @@ def director(request, app=None, model=None, **kwargs):
                 return HttpResponseNotFound(force_text(e))
             except (FieldError, ValidationError) as e:
                 return HttpResponseBadRequest(force_text(e))
+            except DjangoValidationError as e:
+                return HttpResponseBadRequest('\n'.join(e.messages))
             except PermissionDenied:
                 return HttpResponseForbidden(_("You don't have access to this action."))
             except (IndexError, model.DoesNotExist, EmptyPage):
