@@ -31,6 +31,12 @@ ACCESS_FUNCTION = conf.get('ACCESS_FUNCTION', None)
 JSON_DUMPS_PARAMS = conf.get('JSON_DUMPS_PARAMS', {'indent': 2, 'ensure_ascii': False})
 MASK_PASSWORD_FIELDS = conf.get('MASK_PASSWORD_FIELDS', True)
 CHECKSUM_VERSION = conf.get('CHECKSUM_VERSION', '1')
+# Стандарт 'ECMA-262' для JSON определяет передачу только милисекунд для
+# объектов `datetime.datetime` и `datetime.time`. К тому же, он не позволяет
+# передавать таймзону для `datetime.time`.
+# Включите формат 'ISO', если все клиенты могут парсить полный формат времени,
+# и это вам необходимо для бизнес-логики.
+USE_TIME_ISOFORMAT = conf.get('USE_TIME_ISOFORMAT', False)
 
 if ACCESS_FUNCTION:
     from django.utils.module_loading import import_string

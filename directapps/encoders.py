@@ -30,6 +30,8 @@ from django.utils.encoding import force_text
 from django.utils.functional import Promise
 from django.utils.timezone import is_aware
 
+from .conf import USE_TIME_ISOFORMAT
+
 
 class JSONEncoder(OrigJSONEncoder):
     """
@@ -37,11 +39,12 @@ class JSONEncoder(OrigJSONEncoder):
     генераторы, ленивые объекты перевода и исключения. Почти как в Django, но
     с дополнениями и чуть быстрее.
     """
+
     def default(self, o):
         # See "Date Time String Format" in the ECMA-262 specification.
         if isinstance(o, datetime):
             r = o.isoformat()
-            if o.microsecond:
+            if not USE_TIME_ISOFORMAT and o.microsecond:
                 r = r[:23] + r[26:]
             if r.endswith('+00:00'):
                 r = r[:-6] + 'Z'
@@ -49,11 +52,14 @@ class JSONEncoder(OrigJSONEncoder):
         elif isinstance(o, date):
             return o.isoformat()
         elif isinstance(o, time):
-            if is_aware(o):
+            iso = USE_TIME_ISOFORMAT
+            if not iso and is_aware(o):
                 raise ValueError("JSON can't represent timezone-aware times.")
             r = o.isoformat()
-            if o.microsecond:
+            if not iso and o.microsecond:
                 r = r[:12]
+            if iso and r.endswith('+00:00'):
+                r = r[:-6] + 'Z'
             return r
         elif isinstance(o, Decimal):
             return str(o)

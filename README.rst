@@ -146,6 +146,11 @@ CHECKSUM_VERSION
 The options for the checksum compilation of the scheme.
 By default is `"1"`.
 
+USE_TIME_ISOFORMAT
+~~~~~~~~~~~~~~~~~~
+The options for the using ISO time with microseconds into `JSONEncoder`.
+By default is `False` and `JSONEncoder` used ECMA-262 format.
+
 
 Contributing
 ------------

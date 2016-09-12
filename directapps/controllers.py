@@ -318,7 +318,7 @@ class BaseController(object):
         REQUEST = {k: request.GET[k] for k in request.GET.keys()}
         query = REQUEST.get(self.search_key, None)
         fname = REQUEST.get(self.foreign_key, None)
-        # Следующее выполняется только для модели.
+        # Маппинг по колонкам выполняется только для модели.
         if hasattr(self, 'map_column_field'):
             if fname in self.map_column_field:
                 fname = self.map_column_field[fname]
@@ -331,7 +331,7 @@ class BaseController(object):
         except:
             raise ValidationError(_('Please send correct relation name.'))
         ctrl = get_controller(field.rel.model)
-        return ctrl.model_ctrl.simple_search(request, query)
+        return ctrl.model_ctrl.simple_search(request, query, **kwargs)
 
 
 class ModelController(BaseController):
@@ -551,7 +551,7 @@ class ModelController(BaseController):
         ctx  = self.context(request, page, info, columns)
         return ctx
 
-    def simple_search(self, request, query):
+    def simple_search(self, request, query, **kwargs):
         """Простой поиск объектов модели."""
         qs = self.get_queryset(request)
         if query:
@@ -591,10 +591,6 @@ class RelationController(ModelController):
         data = super(RelationController, self).get_scheme(request, **kwargs)
         data['relation'] = self.relation_name
         return data
-
-    def action_fkey(self, request, **kwargs):
-        """Заблокировано для реляций."""
-        raise ValidationError(_('This action is blocked for this type of models.'))
 
 
 class ObjectController(BaseController):
