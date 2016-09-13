@@ -39,7 +39,7 @@ from directapps.conf import (MASTER_CONTROLLER, CONTROLLERS,
     ATTRIBUTE_NAME, MASK_PASSWORD_FIELDS)
 from directapps.exceptions import ValidationError, NotExistError
 from directapps.shortcuts import smart_search
-from directapps.utils import serialize_field
+from directapps.utils import serialize_field, join_display_names_lazy
 
 LOOKUPS_KEYS = default_lookups.keys()
 
@@ -336,6 +336,9 @@ class BaseController(object):
 
 class ModelController(BaseController):
     """Контроллер операций с коллекцией объектов (моделью)."""
+    # Список фильтров автоматически заполняется всеми собственными полями
+    # и полями всех отношений, если не указан пустой список
+    filters = None
     # Список колонок состоит из словарей, сформированных с помощью функции
     # serialize_field()
     columns = None
@@ -363,6 +366,7 @@ class ModelController(BaseController):
         if self.map_column_relation is None:
             self.map_column_relation = {}
 
+        self.autoset_filters()
         self.autoset_columns()
 
         if self.order_columns is None:
@@ -383,10 +387,40 @@ class ModelController(BaseController):
                         ])
             self.search_fields = fields
 
+    def autoset_filters(self):
+        def serialize(f, parent=None):
+            data = {'type': f.__class__.__name__}
+            if parent:
+                data['name'] = '%s__%s' % (parent.name, f.name)
+                data['display_name'] = join_display_names_lazy(
+                    parent.verbose_name, f.verbose_name
+                )
+            else:
+                data['name'] = f.name
+                data['display_name'] = f.verbose_name
+            if f.choices:
+                data['choices'] = f.get_choices(include_blank=False)
+            return data
+
+        if self.filters is None:
+            L = []
+            for field in self.all_fields:
+                if field.name == 'password':
+                    continue
+                L.append(serialize(field))
+                rel = field.related_model
+                if rel:
+                    L.extend([
+                        serialize(f, field) for f in rel._meta.fields if
+                                                f.name != 'password'
+                    ])
+            self.filters = L
+
     def autoset_columns(self):
         def test(f):
             return bool(hasattr(f, 'auto_now_add') or
-                        hasattr(f, 'auto_now') or not f.hidden)
+                        hasattr(f, 'auto_now') or not
+                        (f.hidden or f.name == 'password'))
 
         if self.columns is None:
             self.columns = [serialize_field(f) for f in self.all_fields if test(f)]
@@ -398,6 +432,7 @@ class ModelController(BaseController):
 
         """
         data = {
+            'filters': self.filters,
             'columns': self.columns,
             'default_ordering': self.default_ordering,
             'order_columns': self.order_columns,

@@ -19,6 +19,10 @@
 #   <http://www.gnu.org/licenses/>.
 #
 
+from django.utils import six
+from django.utils.encoding import force_text
+from django.utils.functional import lazy
+
 def access(request):
     "Проверяет, является ли пользователь запроса сотрудником."
     return request.user.is_staff
@@ -84,4 +88,7 @@ def serialize_field(f):
         data['relation'] = '%s.%s' % (m.app_label, m.model_name)
     return data
 
+def join_display_names(*args):
+    return ': '.join([force_text(s) for s in args])
 
+join_display_names_lazy = lazy(join_display_names, six.text_type)

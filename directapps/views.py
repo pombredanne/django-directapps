@@ -173,6 +173,7 @@ def get_scheme_apps(request):
     cs.update(json.dumps(data, cls=JSONEncoder))
     return {
         'checksum': cs.hexdigest(),
+        'version': __version__,
         'apps': data
     }
 
