@@ -322,12 +322,13 @@ class BaseController(object):
         if hasattr(self, 'map_column_field'):
             if fname in self.map_column_field:
                 fname = self.map_column_field[fname]
-            elif fname not in self.all_fields_names:
-                fname = None
         try:
             assert fname is not None
-            field = self.model._meta.get_field(fname)
-            assert field.rel is not None
+            names = fname.split('__')
+            model = self.model
+            for name in names:
+                field = model._meta.get_field(name)
+                model = field.rel.model
         except:
             raise ValidationError(_('Please send correct relation name.'))
         ctrl = get_controller(field.rel.model)
